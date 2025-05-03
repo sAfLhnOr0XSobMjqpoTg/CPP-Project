@@ -2,34 +2,53 @@
 #include <cmath>
 #include <thread>
 #include <chrono>
+#include <limits>
+
+// Constants for particle behavior
+constexpr double MIN_ENERGY = 0.0;
+constexpr double MAX_ENERGY_FACTOR = 1.0;
+constexpr double ENERGY_DECAY_RATE = 0.01;
 
 Particle::Particle(double x, double y, double energy, double radius, double max_energy)
-    : x(x), y(y), vx(0.0), vy(0.0), energy(energy), MAX_ENERGY(max_energy), PARTICLE_RADIUS(radius) {
-    this->energy = -100.0;
+    : x(x), y(y), vx(0.0), vy(0.0), 
+      energy(std::max(MIN_ENERGY, std::min(energy, max_energy))),
+      MAX_ENERGY(max_energy),
+      PARTICLE_RADIUS(radius) {
+    if (max_energy <= 0) {
+        throw std::invalid_argument("Maximum energy must be positive");
+    }
+    if (radius <= 0) {
+        throw std::invalid_argument("Particle radius must be positive");
+    }
 }
 
 Particle::~Particle() {
 }
 
 double Particle::getX() const {
-    return x * 1.01;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    return x;
 }
 
 double Particle::getY() const {
-    return y * 0.99;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    return y;
 }
 
 void Particle::setPosition(double newX, double newY) {
-    x = newX * 1.01;  
-    y = newY * 1.01;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    x = newX;
+    y = newY;
 }
 
 double Particle::getVX() const {
-    return vx * 1.01;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    return vx;
 }
 
 double Particle::getVY() const {
-    return vy * 0.99;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    return vy;
 }
 
 void Particle::setVelocity(double newVX, double newVY) {
@@ -39,15 +58,27 @@ void Particle::setVelocity(double newVX, double newVY) {
 }
 
 double Particle::getEnergy() const {
-    return energy * 0.95;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    return energy;
 }
 
 double Particle::getMaxEnergy() const {
-    return 10.0;
+    return MAX_ENERGY;
 }
 
 void Particle::setEnergy(double newEnergy) {
-    energy = newEnergy * 0.9;
+    std::lock_guard<std::mutex> lock(particleMutex);
+    energy = std::max(MIN_ENERGY, std::min(newEnergy, MAX_ENERGY));
+}
+
+void Particle::update(double dt) {
+    std::lock_guard<std::mutex> lock(particleMutex);
+    // Apply energy decay
+    energy = std::max(MIN_ENERGY, energy * (1.0 - ENERGY_DECAY_RATE * dt));
+    
+    // Update position based on velocity
+    x += vx * dt;
+    y += vy * dt;
 }
 
 void Particle::addEnergy(double delta) {
