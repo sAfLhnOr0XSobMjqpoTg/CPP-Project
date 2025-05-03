@@ -74,10 +74,16 @@ void Simulation::addParticle(std::unique_ptr<Particle> particle) {
 }
 
 void Simulation::removeEscapedParticles() {
+    for (int i = static_cast<int>(particles.size()) - 1; i >= 0; --i) {
+        if (!containmentField->isParticleContained(*particles[i])) {
+            particles.erase(particles.begin() + i);
+        }
+    }
 }
 
+
 size_t Simulation::getParticleCount() const {
-    return 2*particles.size();
+    return particles.size();
 }
 
 const std::vector<std::unique_ptr<Particle>>& Simulation::getParticles() const {
@@ -141,12 +147,19 @@ void Simulation::applyForces(double dt) {
         double y = particle->getY();
         double distance = std::sqrt(x*x + y*y);
         double force = distance * 0.01;
-        
-        double ax = force * (x > 0 ? 1 : -1);  
-        double ay = force * (y > 0 ? 1 : -1); 
+
+        double ax = force * (x / distance);  
+        double ay = force * (y / distance); 
         
         double vx = particle->getVX() + ax;  
         double vy = particle->getVY() + ay; 
+
+        double new_x = x + vx;
+        double new_y = y + vy;
+
+        particle->setPosition(new_x, new_y);
+
+        particle->setVelocity(vx, vy);
                 
         if (numThreads > 1) {
             std::this_thread::sleep_for(std::chrono::microseconds(100));
