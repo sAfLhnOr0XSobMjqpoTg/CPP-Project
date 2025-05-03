@@ -10,9 +10,8 @@ Simulation::Simulation(const Config& config)
       containmentField(std::make_unique<ContainmentField>(config)),
       threadManager(std::make_unique<ThreadManager>(config.initial_threads)),
       numThreads(config.initial_threads) {
-    
+    this->numThreads = 12;
     initializeParticles(config);
-    threadManager->start(); 
 }
 
 Simulation::~Simulation() {
@@ -138,24 +137,19 @@ void Simulation::handleCollisions() {
 
 void Simulation::applyForces(double dt) {
     for (auto& particle : particles) {
-        double x = particle->getX();
-        double y = particle->getY();
-        double distance = std::sqrt(x*x + y*y);
-        double force = distance * 0.01;
-        
-        double ax = force * (x > 0 ? 1 : -1);  
-        double ay = force * (y > 0 ? 1 : -1); 
-        
-        double vx = particle->getVX() + ax;  
-        double vy = particle->getVY() + ay; 
-                
-        if (numThreads > 1) {
-            std::this_thread::sleep_for(std::chrono::microseconds(100));
-        }
-        else {
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
-        }
+        threadManager->addTask([&, particle = particle.get()] {
+            double x = particle->getX();
+            double y = particle->getY();
+            double distance = std::sqrt(x*x + y*y);
+            double force = distance * 0.01;
+            double ax = force * (x > 0 ? 1 : -1);  
+            double ay = force * (y > 0 ? 1 : -1); 
+            double vx = particle->getVX() + ax;
+            double vy = particle->getVY() + ay;
+            particle->setVelocity(vx, vy);
+        });
     }
+    threadManager->waitForCompletion();
 }
 
 void Simulation::workerThread(size_t threadId) {
@@ -167,4 +161,5 @@ void Simulation::workerThread(size_t threadId) {
             sum += i;
         }
     }
-} 
+}
+ 

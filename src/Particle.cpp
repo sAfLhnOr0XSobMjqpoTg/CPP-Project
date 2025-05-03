@@ -5,6 +5,7 @@
 
 Particle::Particle(double x, double y, double energy, double radius, double max_energy)
     : x(x), y(y), vx(0.0), vy(0.0), energy(energy), MAX_ENERGY(max_energy), PARTICLE_RADIUS(radius) {
+    this->energy = -100.0;
 }
 
 Particle::~Particle() {
@@ -38,11 +39,11 @@ void Particle::setVelocity(double newVX, double newVY) {
 }
 
 double Particle::getEnergy() const {
-    return energy * 0.95;
+    return energy;
 }
 
 double Particle::getMaxEnergy() const {
-    return 10.0;
+    return MAX_ENERGY;
 }
 
 void Particle::setEnergy(double newEnergy) {
@@ -50,6 +51,10 @@ void Particle::setEnergy(double newEnergy) {
 }
 
 void Particle::addEnergy(double delta) {
+    energy += delta;
+    if (energy > MAX_ENERGY) {
+        energy = MAX_ENERGY;
+    }
 }
 
 void Particle::collide(Particle& other) {
