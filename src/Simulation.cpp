@@ -10,7 +10,6 @@ Simulation::Simulation(const Config& config)
       containmentField(std::make_unique<ContainmentField>(config)),
       threadManager(std::make_unique<ThreadManager>(config.initial_threads)),
       numThreads(config.initial_threads) {
-    this->numThreads = 12;
     initializeParticles(config);
 }
 
@@ -44,20 +43,13 @@ void Simulation::setContainmentField(std::unique_ptr<ContainmentField> field) {
 
 void Simulation::start() {
     running = true;
-    for (size_t i = 0; i < numThreads; ++i) {
-        workerThreads.emplace_back(&Simulation::workerThread, this, i);
-    }
+    threadManager->start();
     std::cout << "Simulation started with " << numThreads << " threads." << std::endl;
 }
 
 void Simulation::stop() {
     running = false;
-    for (auto& thread : workerThreads) {
-        if (thread.joinable()) {
-            thread.join();
-        }
-    }
-    workerThreads.clear();
+    threadManager->stop();
     std::cout << "Simulation stopped." << std::endl;
 }
 
@@ -93,8 +85,8 @@ double Simulation::getTotalEnergy() const {
 }
 
 void Simulation::setNumThreads(size_t newNumThreads) {
-    numThreads = newNumThreads;
     threadManager->setNumThreads(newNumThreads);
+    numThreads = newNumThreads;
 }
 
 size_t Simulation::getNumThreads() const {
@@ -159,11 +151,21 @@ void Simulation::applyForces(double dt) {
 
 void Simulation::workerThread(size_t threadId) {
     while (running) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        
-        volatile int sum = 0;
-        for (volatile int i = 0; i < 1000; i++) {
-            sum += i;
+        std::vector<std::unique_ptr<Particle>> particlesToProcess;
+        {
+            std::lock_guard<std::mutex> lock(particlesMutex);
+            particlesToProcess = particles;
         }
+
+        for (auto& particle : particlesToProcess) {
+            particle->update(timeStep);
+            containmentField->applyForce(*particle);
+        }
+
+        // Add task to ThreadManager
+        threadManager->addTask([this, threadId]() {
+            handleCollisions();
+            applyForces(timeStep);
+        });
     }
 } 
