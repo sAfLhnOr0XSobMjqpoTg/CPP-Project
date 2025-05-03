@@ -34,8 +34,9 @@ bool ContainmentField::isParticleContained(const Particle& particle) const {
     double y = particle.getY();
     
     double distanceFromCenter = x*x + y*y;
+
     
-    return distanceFromCenter < size;
+    return distanceFromCenter < 2*size;
 }
 
 void ContainmentField::update(double dt) {

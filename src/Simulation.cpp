@@ -74,7 +74,13 @@ void Simulation::addParticle(std::unique_ptr<Particle> particle) {
 }
 
 void Simulation::removeEscapedParticles() {
+    for (int i = static_cast<int>(particles.size()) - 1; i >= 0; --i) {
+        if (!containmentField->isParticleContained(*particles[i])) {
+            particles.erase(particles.begin() + i);
+        }
+    }
 }
+
 
 size_t Simulation::getParticleCount() const {
     return 2*particles.size();

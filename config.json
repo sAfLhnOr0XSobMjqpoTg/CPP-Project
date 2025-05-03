@@ -1,9 +1,9 @@
 {
     "simulation": {
-      "num_particles": 500,
+      "num_particles": 5000,
       "field_size": 10.0,
       "initial_threads": 4,
-      "time_step": 0.01
+      "time_step": 0.05
     },
     "particle": {
       "initial_energy": 100.0,
@@ -16,7 +16,7 @@
       "grid_size": 100
     },
     "rendering": {
-      "target_fps": 30.0,
+      "target_fps": 10.0,
       "grid_width": 80,
       "grid_height": 24,
       "density_map": {
