@@ -3,14 +3,23 @@
 #include <algorithm>
 #include <random>
 #include <thread>
-#include <iostream> 
+#include <iostream>
+#include <stdexcept>
+
 Simulation::Simulation(const Config& config)
     : fieldSize(config.field_size),
       timeStep(config.time_step),
       containmentField(std::make_unique<ContainmentField>(config)),
       threadManager(std::make_unique<ThreadManager>(config.initial_threads)),
       numThreads(config.initial_threads) {
-    this->numThreads = 12;
+    // Validate configuration parameters
+    if (fieldSize <= 0 || timeStep <= 0) {
+        throw std::invalid_argument("Invalid simulation configuration: field size or time step must be positive");
+    }
+    
+    // Adjust number of threads within reasonable bounds
+    numThreads = std::max(1, std::min(config.initial_threads, static_cast<int>(std::thread::hardware_concurrency())));
+    
     initializeParticles(config);
 }
 
@@ -19,15 +28,25 @@ Simulation::~Simulation() {
 }
 
 void Simulation::initializeParticles(const Config& config) {
+    // Validate particle generation parameters
+    if (config.num_particles <= 0 || config.particle_radius <= 0 || config.max_energy <= 0) {
+        throw std::invalid_argument("Invalid particle generation parameters");
+    }
+    
+    // Use a more robust random number generation
     std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-fieldSize/2, fieldSize/2);
+    std::mt19937_64 gen(rd());
+    
+    // Separate distributions for x, y, energy
+    std::uniform_real_distribution<> pos_dis(-fieldSize/2, fieldSize/2);
+    std::uniform_real_distribution<> energy_dis(0.0, config.max_energy);
     std::uniform_real_distribution<> vel_dis(-1.0, 1.0); // Velocity range
     
     size_t count = 0.1*config.num_particles;
     for (size_t i = 0; i < count; ++i) {
         auto particle = std::make_unique<Particle>(
-            dis(gen), dis(gen),
+            pos_dis(gen), pos_dis(gen),
+            energy_dis(gen),
             config.initial_energy,
             config.particle_radius,
             config.max_energy
