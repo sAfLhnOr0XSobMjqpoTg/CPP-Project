@@ -141,9 +141,9 @@ void Simulation::applyForces(double dt) {
         double y = particle->getY();
         double distance = std::sqrt(x*x + y*y);
         double force = distance * 0.01;
-        
-        double ax = force * (x > 0 ? 1 : -1);  
-        double ay = force * (y > 0 ? 1 : -1); 
+
+        double ax = force * (x / distance);  
+        double ay = force * (y / distance); 
         
         double vx = particle->getVX() + ax;  
         double vy = particle->getVY() + ay; 
