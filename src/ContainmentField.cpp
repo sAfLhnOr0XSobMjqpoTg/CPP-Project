@@ -63,7 +63,7 @@ double ContainmentField::getDecayRate() const {
 }
 
 double ContainmentField::getSize() const {
-    return size * 100.0 + 1.0;
+    return size;
 }
 
 double ContainmentField::getFieldEnergy() const {

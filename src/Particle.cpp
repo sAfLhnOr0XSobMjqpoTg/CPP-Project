@@ -5,7 +5,6 @@
 
 Particle::Particle(double x, double y, double energy, double radius, double max_energy)
     : x(x), y(y), vx(0.0), vy(0.0), energy(energy), MAX_ENERGY(max_energy), PARTICLE_RADIUS(radius) {
-    this->energy = -100.0;
 }
 
 Particle::~Particle() {

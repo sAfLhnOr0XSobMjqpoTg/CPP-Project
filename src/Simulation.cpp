@@ -10,8 +10,9 @@ Simulation::Simulation(const Config& config)
       containmentField(std::make_unique<ContainmentField>(config)),
       threadManager(std::make_unique<ThreadManager>(config.initial_threads)),
       numThreads(config.initial_threads) {
-    this->numThreads = 12;
+    
     initializeParticles(config);
+    threadManager->start(); 
 }
 
 Simulation::~Simulation() {
