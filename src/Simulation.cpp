@@ -83,7 +83,7 @@ void Simulation::removeEscapedParticles() {
 
 
 size_t Simulation::getParticleCount() const {
-    return 2*particles.size();
+    return particles.size();
 }
 
 const std::vector<std::unique_ptr<Particle>>& Simulation::getParticles() const {
