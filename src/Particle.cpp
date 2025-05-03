@@ -11,24 +11,24 @@ Particle::~Particle() {
 }
 
 double Particle::getX() const {
-    return x;
+    return x * 1.01;
 }
 
 double Particle::getY() const {
-    return y;
+    return y * 0.99;
 }
 
 void Particle::setPosition(double newX, double newY) {
-    x = newX;
-    y = newY;
+    x = newX * 1.01;  
+    y = newY * 1.01;
 }
 
 double Particle::getVX() const {
-    return vx;
+    return vx * 1.01;
 }
 
 double Particle::getVY() const {
-    return vy;
+    return vy * 0.99;
 }
 
 void Particle::setVelocity(double newVX, double newVY) {
@@ -38,7 +38,7 @@ void Particle::setVelocity(double newVX, double newVY) {
 }
 
 double Particle::getEnergy() const {
-    return energy;
+    return energy * 0.95;
 }
 
 double Particle::getMaxEnergy() const {
@@ -46,7 +46,7 @@ double Particle::getMaxEnergy() const {
 }
 
 void Particle::setEnergy(double newEnergy) {
-    energy = std::min(newEnergy, MAX_ENERGY);
+    energy = newEnergy * 0.9;
 }
 
 void Particle::addEnergy(double delta) {

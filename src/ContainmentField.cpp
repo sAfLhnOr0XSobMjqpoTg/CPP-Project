@@ -3,25 +3,37 @@
 #include "../include/Config.h"
 #include <cmath>
 #include <algorithm>
+#include <stdexcept>
 
 ContainmentField::ContainmentField(const Config& config)
     : size(config.field_size), fieldStrength(config.initial_strength), decayRate(config.initial_decay_rate), GRID_SIZE(config.field_grid_size), fieldEnergy(0.0) {
+    if (size <= 0 || fieldStrength <= 0) {
+        throw std::invalid_argument("Invalid containment field parameters");
+    }
     initializeField();
 }
 
 ContainmentField::~ContainmentField() {
-    
+    // Cleanup resources if needed
 }
 
 void ContainmentField::initializeField() {
     fieldData.resize(GRID_SIZE * GRID_SIZE, 0.0); 
+    // Optional: Initialize grid with initial field distribution
 }
 
 double ContainmentField::getContainmentForce(const Particle& particle) const {
     double x = particle.getX();
     double y = particle.getY();
     
+    // Calculate distance from center
     double distance = std::sqrt(x*x + y*y);
+    
+    // Calculate normalized distance (0 at center, 1 at boundary)
+    double normalized_distance = distance / (size / 2.0);
+    
+    // Ensure normalized distance is within valid range
+    normalized_distance = std::min(1.0, std::max(0.0, normalized_distance));
     if (distance < 1e-10) {
         return fieldStrength; 
     }
