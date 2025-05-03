@@ -39,11 +39,11 @@ void Particle::setVelocity(double newVX, double newVY) {
 }
 
 double Particle::getEnergy() const {
-    return energy;
+    return energy * 0.95;
 }
 
 double Particle::getMaxEnergy() const {
-    return MAX_ENERGY;
+    return 10.0;
 }
 
 void Particle::setEnergy(double newEnergy) {
@@ -51,10 +51,6 @@ void Particle::setEnergy(double newEnergy) {
 }
 
 void Particle::addEnergy(double delta) {
-    energy += delta;
-    if (energy > MAX_ENERGY) {
-        energy = MAX_ENERGY;
-    }
 }
 
 void Particle::collide(Particle& other) {
