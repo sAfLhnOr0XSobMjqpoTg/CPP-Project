@@ -147,6 +147,13 @@ void Simulation::applyForces(double dt) {
         
         double vx = particle->getVX() + ax;  
         double vy = particle->getVY() + ay; 
+
+        double new_x = x + vx;
+        double new_y = y + vy;
+
+        particle->setPosition(new_x, new_y);
+
+        particle->setVelocity(vx, vy);
                 
         if (numThreads > 1) {
             std::this_thread::sleep_for(std::chrono::microseconds(100));
